@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>编辑模板 - 饮食追踪器</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .navbar {
+            background-color: #4ECDC4;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 15px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        
+        .nav-links a:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .logo {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-title {
+            font-size: 1.5rem;
+            margin-bottom: 25px;
+            color: #333;
+            border-bottom: 2px solid #4ECDC4;
+            padding-bottom: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #4ECDC4;
+            box-shadow: 0 0 0 2px rgba(78, 205, 196, 0.2);
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .btn {
+            display: inline-block;
+            background-color: #4ECDC4;
+            color: white;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+        
+        .btn:hover {
+            background-color: #3CA299;
+        }
+        
+        .btn-secondary {
+            background-color: #6c757d;
+            margin-left: 10px;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+        
+        .btn-danger {
+            background-color: #dc3545;
+            margin-left: 10px;
+        }
+        
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+        
+        .flash-messages {
+            margin-bottom: 20px;
+        }
+        
+        .alert {
+            padding: 12px 15px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .ratio-warning {
+            color: #dc3545;
+            font-size: 0.9rem;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        .template-info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            border-left: 4px solid #4ECDC4;
+        }
+        
+        .info-item {
+            margin: 5px 0;
+        }
+        
+        @media (max-width: 600px) {
+            .navbar {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .nav-links {
+                width: 100%;
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="logo">🍽️ 饮食追踪器</div>
+        <div class="nav-links">
+            <a href="/">今日仪表盘</a>
+            <a href="/add_record">添加记录</a>
+            <a href="/templates">食物模板</a>
+            <a href="/history">历史记录</a>
+            <a href="/config">个人设置</a>
+        </div>
+    </nav>
+    
+    <!-- 闪存消息 -->
+    <div class="flash-messages">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category if category != 'error' else 'error' }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+    
+    <div class="card">
+        <h1 class="card-title">编辑食物模板</h1>
+        
+        <div class="template-info">
+            <div class="info-item">模板ID: {{ template.id }}</div>
+            <div class="info-item">创建时间: {{ template.created_at.strftime('%Y-%m-%d %H:%M') if template.created_at else '未知' }}</div>
+        </div>
+        
+        <form action="/edit_template/{{ template.id }}" method="post" onsubmit="return validateForm()">
+            <!-- 食物名称 -->
+            <div class="form-group">
+                <label class="form-label">食物名称 *</label>
+                <input type="text" name="name" class="form-input" 
+                       value="{{ template.name }}" required>
+            </div>
+            
+            <!-- 营养比例 -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">碳水化合物比例 (%) *</label>
+                    <input type="number" name="carb_ratio" id="carbRatio" class="form-input" 
+                           value="{{ template.carb_ratio }}" step="0.1" min="0" max="100" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">蛋白质比例 (%) *</label>
+                    <input type="number" name="protein_ratio" id="proteinRatio" class="form-input" 
+                           value="{{ template.protein_ratio }}" step="0.1" min="0" max="100" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">脂肪比例 (%) *</label>
+                    <input type="number" name="fat_ratio" id="fatRatio" class="form-input" 
+                           value="{{ template.fat_ratio }}" step="0.1" min="0" max="100" required>
+                </div>
+            </div>
+            
+            <div id="ratioWarning" class="ratio-warning">
+                警告：营养比例总和超过100%！当前总和：<span id="totalRatio">0</span>%
+            </div>
+            
+            <!-- 热量（可选） -->
+            <div class="form-group">
+                <label class="form-label">每克热量（千卡，可选）</label>
+                <input type="number" name="calories" class="form-input" 
+                       value="{{ template.calories if template.calories else '' }}" 
+                       step="0.1" min="0" placeholder="例如：1.3 (每克的热量)">
+                <small style="color: #666;">如果不填，系统会根据营养比例自动计算</small>
+            </div>
+            
+            <div style="margin-top: 30px; text-align: center;">
+                <button type="submit" class="btn">保存修改</button>
+                <a href="/templates" class="btn btn-secondary">返回模板列表</a>
+                <a href="/delete_template/{{ template.id }}" class="btn btn-danger" 
+                   onclick="return confirm('确定要永久删除模板"{{ template.name }}"吗？此操作不可撤销！')">
+                    删除模板
+                </a>
+            </div>
+        </form>
+    </div>
+    
+    <script>
+        function calculateTotalRatio() {
+            const carb = parseFloat(document.getElementById('carbRatio').value) || 0;
+            const protein = parseFloat(document.getElementById('proteinRatio').value) || 0;
+            const fat = parseFloat(document.getElementById('fatRatio').value) || 0;
+            
+            return carb + protein + fat;
+        }
+        
+        function updateRatioWarning() {
+            const total = calculateTotalRatio();
+            const warning = document.getElementById('ratioWarning');
+            const totalSpan = document.getElementById('totalRatio');
+            
+            totalSpan.textContent = total.toFixed(1);
+            
+            if (total > 100) {
+                warning.style.display = 'block';
+                return false;
+            } else {
+                warning.style.display = 'none';
+                return true;
+            }
+        }
+        
+        function validateForm() {
+            if (!updateRatioWarning()) {
+                alert('营养比例总和不能超过100%！请调整比例。');
+                return false;
+            }
+            
+            const name = document.querySelector('input[name="name"]').value.trim();
+            if (name.length < 1) {
+                alert('请输入食物名称！');
+                return false;
+            }
+            
+            return true;
+        }
+        
+        // 监听输入变化
+        document.getElementById('carbRatio').addEventListener('input', updateRatioWarning);
+        document.getElementById('proteinRatio').addEventListener('input', updateRatioWarning);
+        document.getElementById('fatRatio').addEventListener('input', updateRatioWarning);
+        
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', updateRatioWarning);
+    </script>
+</body>
+</html>
