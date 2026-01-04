@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>历史记录 - 饮食追踪器</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .navbar {
+            background-color: #4ECDC4;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 15px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        
+        .nav-links a:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .logo {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-title {
+            font-size: 1.5rem;
+            margin-bottom: 25px;
+            color: #333;
+            border-bottom: 2px solid #4ECDC4;
+            padding-bottom: 10px;
+        }
+        
+        .date-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .date-input {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        .btn {
+            display: inline-block;
+            background-color: #4ECDC4;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+        
+        .btn:hover {
+            background-color: #3CA299;
+        }
+        
+        .btn-secondary {
+            background-color: #6c757d;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+        
+        .flash-messages {
+            margin-bottom: 20px;
+        }
+        
+        .alert {
+            padding: 12px 15px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .daily-summary {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border-left: 4px solid #4ECDC4;
+        }
+        
+        .summary-title {
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 1.1rem;
+        }
+        
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background-color: white;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #4ECDC4;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .stat-goal {
+            font-size: 0.8rem;
+            color: #999;
+        }
+        
+        .records-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .records-table th {
+            background-color: #f8f9fa;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .records-table td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .records-table tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .food-name {
+            font-weight: 500;
+        }
+        
+        .nutrient-cell {
+            text-align: center;
+            min-width: 80px;
+        }
+        
+        .time-cell {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .delete-cell {
+            text-align: center;
+            width: 60px;
+        }
+        
+        .delete-link {
+            color: #dc3545;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+        
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+        
+        .date-header {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin: 30px 0 15px 0;
+            color: #333;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .nav-links {
+                width: 100%;
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+            
+            .records-table {
+                display: block;
+                overflow-x: auto;
+            }
+            
+            .summary-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="logo">🍽️ 饮食追踪器</div>
+        <div class="nav-links">
+            <a href="/">今日仪表盘</a>
+            <a href="/add_record">添加记录</a>
+            <a href="/templates">食物模板</a>
+            <a href="/history" style="background-color: rgba(255, 255, 255, 0.2);">历史记录</a>
+            <a href="/config">个人设置</a>
+        </div>
+    </nav>
+    
+    <!-- 闪存消息 -->
+    <div class="flash-messages">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category if category != 'error' else 'error' }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+    
+    <div class="card">
+        <h1 class="card-title">历史记录</h1>
+        
+        <!-- 日期选择器 -->
+        <form action="/history" method="get" class="date-selector">
+            <input type="date" name="date" class="date-input" 
+                   value="{{ selected_date.strftime('%Y-%m-%d') if selected_date else '' }}">
+            <button type="submit" class="btn">查看日期</button>
+            <a href="/history" class="btn btn-secondary">查看今天</a>
+            <span style="margin-left: auto; color: #666;">
+                当前查看: {{ selected_date.strftime('%Y年%m月%d日') }}
+            </span>
+        </form>
+        
+        <!-- 每日汇总 -->
+        <div class="daily-summary">
+            <div class="summary-title">今日摄入汇总</div>
+            <div class="summary-stats">
+                <div class="stat-item">
+                    <div class="stat-value">{{ "%.1f"|format(daily_summary.carb) }}g</div>
+                    <div class="stat-label">碳水化合物</div>
+                    <div class="stat-goal">目标: {{ "%.1f"|format(goals.carb) }}g</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">{{ "%.1f"|format(daily_summary.protein) }}g</div>
+                    <div class="stat-label">蛋白质</div>
+                    <div class="stat-goal">目标: {{ "%.1f"|format(goals.protein) }}g</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">{{ "%.1f"|format(daily_summary.fat) }}g</div>
+                    <div class="stat-label">脂肪</div>
+                    <div class="stat-goal">目标: {{ "%.1f"|format(goals.fat) }}g</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">{{ "%.1f"|format(daily_summary.calories) }}千卡</div>
+                    <div class="stat-label">总热量</div>
+                    <div class="stat-goal">建议: 根据目标计算</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 记录列表 -->
+        <h3 class="date-header">详细记录 ({{ records|length }}条)</h3>
+        
+        {% if records %}
+        <table class="records-table">
+            <thead>
+                <tr>
+                    <th>时间</th>
+                    <th>食物名称</th>
+                    <th>重量(g)</th>
+                    <th>碳水(%)</th>
+                    <th>蛋白(%)</th>
+                    <th>脂肪(%)</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in records %}
+                <tr>
+                    <td class="time-cell">{{ record.time.strftime('%H:%M') }}</td>
+                    <td class="food-name">{{ record.food_name }}</td>
+                    <td>{{ record.weight }}</td>
+                    <td class="nutrient-cell">{{ record.carb_ratio }}</td>
+                    <td class="nutrient-cell">{{ record.protein_ratio }}</td>
+                    <td class="nutrient-cell">{{ record.fat_ratio }}</td>
+                    <td class="delete-cell">
+                        <a href="/delete_record/{{ record.id }}" class="delete-link" 
+                           onclick="return confirm('确定要删除这条记录吗？')">删除</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">📅</div>
+            <h3>{{ selected_date.strftime('%Y年%m月%d日') }} 没有记录</h3>
+            <p>今天还没有添加任何饮食记录</p>
+            <a href="/add_record" class="btn" style="margin-top: 20px;">添加第一条记录</a>
+        </div>
+        {% endif %}
+        
+        <div style="margin-top: 30px; text-align: center;">
+            <a href="/" class="btn btn-secondary">返回首页</a>
+        </div>
+    </div>
+    
+    <script>
+        // 设置日期选择器的默认值为今天
+        document.addEventListener('DOMContentLoaded', function() {
+            const dateInput = document.querySelector('input[type="date"]');
+            if (dateInput && !dateInput.value) {
+                const today = new Date().toISOString().split('T')[0];
+                dateInput.value = today;
+            }
+            
+            // 添加快捷键：左右箭头切换日期
+            document.addEventListener('keydown', function(event) {
+                const dateInput = document.querySelector('input[type="date"]');
+                if (!dateInput) return;
+                
+                let currentDate = new Date(dateInput.value);
+                
+                if (event.key === 'ArrowLeft') {
+                    // 前一天
+                    currentDate.setDate(currentDate.getDate() - 1);
+                    dateInput.value = currentDate.toISOString().split('T')[0];
+                    dateInput.form.submit();
+                } else if (event.key === 'ArrowRight') {
+                    // 后一天
+                    currentDate.setDate(currentDate.getDate() + 1);
+                    dateInput.value = currentDate.toISOString().split('T')[0];
+                    dateInput.form.submit();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
