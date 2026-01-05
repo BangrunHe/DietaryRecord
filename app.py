@@ -13,10 +13,29 @@ matplotlib.rcParams['font.sans-serif'] = ['SimHei', 'Microsoft YaHei', 'DejaVu S
 matplotlib.rcParams['axes.unicode_minus'] = False
 
 
+import os
+
 app = Flask(__name__)
-app.config['SECRET_KEY'] = '85858585afafafaf'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///diet.db'
+
+# 安全密钥 - 使用环境变量
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-key-for-local-only')
+
+# 数据库配置 - 自动判断环境
+if 'PYTHONANYWHERE_DOMAIN' in os.environ:
+    # PythonAnywhere环境 - 使用MySQL
+    username = os.environ.get('MYSQL_USERNAME', '更改为你的MYSQL账户')
+    password = os.environ.get('MYSQL_PASSWORD', '更改为你的密码')
+    hostname = f'{username}.mysql.pythonanywhere-services.com'
+    database = f'{username}$default'
+
+    app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql+mysqldb://{username}:{password}@{hostname}/{database}'
+    app.config['SQLALCHEMY_POOL_RECYCLE'] = 299  # 防止连接超时
+else:
+    # 本地开发环境 - 使用SQLite
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///diet.db'
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
 db = SQLAlchemy(app)
 
 # ========== 数据模型 ==========
@@ -446,4 +465,5 @@ if __name__ == '__main__':
 
     print("饮食追踪器启动中...")
     print("访问地址: http://localhost:5000")
+
     app.run(debug=True, host='0.0.0.0', port=5000)
