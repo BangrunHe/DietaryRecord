@@ -239,16 +239,29 @@ def add_record():
 
             # 检查是否使用了模板
             template_id = request.form.get('template_id')
-            if template_id and template_id != 'custom':
-                template = FoodTemplate.query.get(int(template_id))
-                carb_ratio = template.carb_ratio
-                protein_ratio = template.protein_ratio
-                fat_ratio = template.fat_ratio
-            else:
-                # 自定义输入
+
+            if template_id in ['', 'custom', '0']:
+                template_id_value = None  # 不使用模板
                 carb_ratio = float(request.form['carb_ratio'])
                 protein_ratio = float(request.form['protein_ratio'])
                 fat_ratio = float(request.form['fat_ratio'])
+            elif template_id:
+                # 使用模板
+                template = FoodTemplate.query.get(int(template_id))
+                if template:
+                    carb_ratio = template.carb_ratio
+                    protein_ratio = template.protein_ratio
+                    fat_ratio = template.fat_ratio
+                    template_id_value = int(template_id)
+                else:
+                    flash('选择的模板不存在', 'error')
+                    return render_template('add_record.html', templates=templates)
+            else:
+                # 没有选择模板，使用自定义值
+                carb_ratio = float(request.form['carb_ratio'])
+                protein_ratio = float(request.form['protein_ratio'])
+                fat_ratio = float(request.form['fat_ratio'])
+                template_id_value = None
 
             # 解析时间
             time_str = request.form.get('time', datetime.now().strftime('%H:%M'))
@@ -411,6 +424,29 @@ def edit_template(id):
 def generate_progress_chart(progress):
     """生成进度条图表"""
     try:
+        # 尝试设置中文字体
+        import matplotlib.font_manager as fm
+
+        # 查找字体文件
+        font_paths = [
+            '/home/BangrunHe/DietaryRecord/static/fonts/SimHei.ttf',
+            '/home/BangrunHe/DietaryRecord/static/fonts/msyh.ttf',
+            '/usr/share/fonts/truetype/wqy/wqy-microhei.ttc',  # 系统可能有的中文字体
+        ]
+
+        for font_path in font_paths:
+            if os.path.exists(font_path):
+                fm.fontManager.addfont(font_path)
+                font_name = fm.FontProperties(fname=font_path).get_name()
+                plt.rcParams['font.sans-serif'] = [font_name]
+                plt.rcParams['axes.unicode_minus'] = False
+                print(f"使用字体: {font_name}")
+                break
+        else:
+            # 没找到中文字体，使用英文
+            print("未找到中文字体，使用英文标签")
+            labels = ['Carb', 'Protein', 'Fat']
+            
         # 准备数据
         labels = ['碳水', '蛋白质', '脂肪']
         percentages = [progress['carb']['percentage'],
@@ -467,3 +503,4 @@ if __name__ == '__main__':
     print("访问地址: http://localhost:5000")
 
     app.run(debug=True, host='0.0.0.0', port=5000)
+
